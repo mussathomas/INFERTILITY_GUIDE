@@ -59,7 +59,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const url = `${API_BASE}/api${path}`;
+  // Backend already has /api prefix in router, so don't add it again
+  const url = `${API_BASE}${path}`;
   console.log(`[API] ${options.method || "GET"} ${url}`);
 
   try {
@@ -84,26 +85,26 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export const api = {
   register: (email: string, full_name: string, password: string) =>
-    request<AuthResponse>("/register", {
+    request<AuthResponse>("/api/register", {
       method: "POST",
       body: JSON.stringify({ email, full_name, password }),
     }),
 
   login: (email: string, password: string) =>
-    request<AuthResponse>("/login", {
+    request<AuthResponse>("/api/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
-  me: () => request<User>("/me"),
+  me: () => request<User>("/api/me"),
 
   chat: (message: string, conversation_id?: number) =>
-    request<ChatResponse>("/chat", {
+    request<ChatResponse>("/api/chat", {
       method: "POST",
       body: JSON.stringify({ message, conversation_id }),
     }),
 
-  conversations: () => request<Conversation[]>("/conversations"),
+  conversations: () => request<Conversation[]>("/api/conversations"),
 };
 
 export { ApiError };
