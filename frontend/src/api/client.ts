@@ -59,13 +59,27 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
+  const url = `${API_BASE}/api${path}`;
+  console.log(`[API] ${options.method || "GET"} ${url}`);
 
-  if (!res.ok) {
-    throw new ApiError(data.detail || "Request failed", res.status);
+  try {
+    const res = await fetch(url, { ...options, headers });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      console.error(`[API Error] ${res.status}: ${data.detail || "Unknown error"}`);
+      throw new ApiError(data.detail || `Request failed with status ${res.status}`, res.status);
+    }
+    console.log(`[API Success] ${res.status}`);
+    return data as T;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    console.error(`[API Network Error]`, error);
+    throw new ApiError(
+      error instanceof Error ? error.message : "Network error",
+      0
+    );
   }
-  return data as T;
 }
 
 export const api = {
